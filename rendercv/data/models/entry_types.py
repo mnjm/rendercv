@@ -322,6 +322,12 @@ class EntryBase(EntryWithDate):
         ),
         examples=["2020-09-24", "present"],
     )
+    role: Optional[str] = pydantic.Field(
+        default=None,
+        title="Role",
+        description="The role.",
+        examples=["Member of DS Team. Resp for fucking success of the company"]
+    )
     highlights: Optional[list[str]] = pydantic.Field(
         default=None,
         title="Highlights",
