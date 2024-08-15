@@ -17,7 +17,7 @@ from ...themes import (
     Sb2novThemeOptions,
 )
 from . import entry_types
-from .base import RenderCVBaseModel
+from .base import RenderCVBaseModelWithoutExtraKeys
 
 # ======================================================================================
 # Create validator functions: ==========================================================
@@ -41,6 +41,7 @@ def validate_design_options(
         available_entry_type_names (list[str]): The available entry type names. These
             are used to validate if all the templates are provided in the custom theme
             folder.
+
     Returns:
         Any: The validated design as a Pydantic data model.
     """
@@ -56,10 +57,10 @@ def validate_design_options(
         # It is a custom theme. Validate it:
         theme_name: str = str(design["theme"])
 
-        # Check if the theme name is valid:
-        if not theme_name.isalpha():
+        # Custom theme should only contain letters and digits:
+        if not theme_name.isalnum():
             raise ValueError(
-                "The custom theme name should contain only letters.",
+                "The custom theme name should only contain letters and digits.",
                 "theme",  # this is the location of the error
                 theme_name,  # this is value of the error
             )
@@ -131,7 +132,7 @@ def validate_design_options(
         else:
             # Then it means there is no __init__.py file in the custom theme folder.
             # Create a dummy data model and use that instead.
-            class ThemeOptionsAreNotProvided(RenderCVBaseModel):
+            class ThemeOptionsAreNotProvided(RenderCVBaseModelWithoutExtraKeys):
                 theme: str = theme_name
 
             theme_data_model = ThemeOptionsAreNotProvided(theme=theme_name)

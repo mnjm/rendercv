@@ -71,14 +71,14 @@ requires-python = '>=3.10'
 # is installed:
 dependencies = [
     'Jinja2==3.1.4',               # to generate LaTeX and Markdown files
-    'phonenumbers==8.13.40',       # to validate phone numbers
+    'phonenumbers==8.13.43',       # to validate phone numbers
     'email-validator==2.2.0',      # to validate email addresses
     'pydantic==2.8.2',             # to validate and parse the input file
     'pydantic-extra-types==2.9.0', # to validate some extra types
     'ruamel.yaml==0.18.6',         # to parse YAML files
     'typer==0.12.3',               # to create the command-line interface
     "markdown==3.6",               # to convert Markdown to HTML
-    "PyMuPDF==1.24.7",             # to convert PDF files to images
+    "PyMuPDF==1.24.9",             # to convert PDF files to images
 ]
 classifiers = [
     "Intended Audience :: Science/Research",
@@ -135,7 +135,7 @@ dependencies = [
     "black==24.4.2",    # to format the code
     "ipython==8.26.0",  # for ipython shell
     "isort==5.13.2",    # to sort the imports  
-    "pyright==1.1.370", # to check the types 
+    "pyright==1.1.370", # to check the types
 ]
 path = ".venv"
 [tool.hatch.envs.default.scripts]
@@ -144,7 +144,7 @@ path = ".venv"
 # Format all the code in the `rendercv` package with `black`:
 format = "black rendercv && black docs && black tests" # hatch run format
 # Lint the code in the `rendercv` package with `ruff`:
-lint = "ruff check rendercv && ruff check docs && ruff check tests" # hatch run lint
+lint = "ruff check rendercv" # hatch run lint
 # Sort the imports in the `rendercv` package with `isort`:
 sort-imports = "isort rendercv && isort docs && isort tests" # hatch run sort-imports
 # Check types in the `rendercv` package with `pyright`:
@@ -179,6 +179,7 @@ dependencies = [
     "coverage==7.5.4",      # to generate coverage reports
     "time-machine==2.14.2", # to select an arbitrary date and time for testing
     "pypdf==4.2.0",         # to read PDF files
+    "hatch==1.12.0",        # to test hatch scripts
 ]
 path = ".venv-test"
 # [[tool.hatch.envs.test.matrix]]

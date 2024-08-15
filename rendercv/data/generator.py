@@ -1,12 +1,12 @@
 """
-The `rendercv.data.generators` module contains all the functions for generating the JSON
+The `rendercv.data.generator` module contains all the functions for generating the JSON
 Schema of the input data format and a sample YAML input file.
 """
 
 import io
 import json
 import pathlib
-from typing import Any, Optional
+from typing import Optional
 
 import pydantic
 import ruamel.yaml
@@ -14,11 +14,12 @@ import ruamel.yaml
 from . import models, reader
 
 
-def dictionary_to_yaml(dictionary: dict[str, Any]):
+def dictionary_to_yaml(dictionary: dict) -> str:
     """Converts a dictionary to a YAML string.
 
     Args:
-        dictionary (dict[str, Any]): The dictionary to be converted to YAML.
+        dictionary (dict): The dictionary to be converted to YAML.
+
     Returns:
         str: The YAML string.
     """
@@ -29,6 +30,7 @@ def dictionary_to_yaml(dictionary: dict[str, Any]):
     with io.StringIO() as string_stream:
         yaml_object.dump(dictionary, string_stream)
         yaml_string = string_stream.getvalue()
+
     return yaml_string
 
 
@@ -39,6 +41,7 @@ def create_a_sample_data_model(
 
     Args:
         name (str, optional): The name of the person. Defaults to "John Doe".
+
     Returns:
         RenderCVDataModel: A sample data model.
     """
@@ -77,6 +80,7 @@ def create_a_sample_yaml_input_file(
             Defaults to None.
         name (str, optional): The name of the person. Defaults to "John Doe".
         theme (str, optional): The theme of the CV. Defaults to "classic".
+
     Returns:
         str: The sample YAML input file as a string.
     """
@@ -106,7 +110,7 @@ def create_a_sample_yaml_input_file(
     return yaml_string
 
 
-def generate_json_schema() -> dict[str, Any]:
+def generate_json_schema() -> dict:
     """Generate the JSON schema of RenderCV.
 
     JSON schema is generated for the users to make it easier for them to write the input
@@ -151,6 +155,21 @@ def generate_json_schema() -> dict[str, Any]:
 
                         field["oneOf"] = field["anyOf"]
                         del field["anyOf"]
+
+            # Currently, YAML extension in VS Code doesn't work properly with the
+            # `ListOfEntries` objects. For the best user experience, we will update
+            # the JSON Schema. If YAML extension in VS Code starts to work properly,
+            # then we should remove the following code for the correct JSON Schema.
+            ListOfEntriesForJsonSchema = list[models.Entry]
+            list_of_entries_json_schema = pydantic.TypeAdapter(
+                ListOfEntriesForJsonSchema
+            ).json_schema()
+            del list_of_entries_json_schema["$defs"]
+
+            # Update the JSON Schema:
+            json_schema["$defs"]["CurriculumVitae"]["properties"]["sections"]["oneOf"][
+                0
+            ]["additionalProperties"] = list_of_entries_json_schema
 
             return json_schema
 

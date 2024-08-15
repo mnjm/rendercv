@@ -30,13 +30,18 @@ from .models import (
     RenderCVDataModel,
     SectionContents,
     SocialNetwork,
+    available_entry_models,
     available_entry_type_names,
     available_social_networks,
     available_theme_options,
     available_themes,
     format_date,
 )
-from .reader import read_input_file
+from .reader import (
+    read_a_yaml_file,
+    read_input_file,
+    validate_input_dictionary_and_return_the_data_model,
+)
 
 __all__ = [
     "OneLineEntry",
@@ -61,4 +66,7 @@ __all__ = [
     "available_social_networks",
     "SectionContents",
     "available_entry_type_names",
+    "available_entry_models",
+    "read_a_yaml_file",
+    "validate_input_dictionary_and_return_the_data_model",
 ]

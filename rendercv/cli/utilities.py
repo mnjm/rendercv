@@ -9,10 +9,7 @@ import shutil
 import urllib.request
 from typing import Optional
 
-import pydantic
 import typer
-
-from .. import data
 
 
 def string_to_file_path(string: Optional[str]) -> Optional[pathlib.Path]:
@@ -21,6 +18,7 @@ def string_to_file_path(string: Optional[str]) -> Optional[pathlib.Path]:
 
     Args:
         string (str): The string to be converted to a pathlib.Path object.
+
     Returns:
         pathlib.Path: The pathlib.Path object.
     """
@@ -31,33 +29,30 @@ def string_to_file_path(string: Optional[str]) -> Optional[pathlib.Path]:
 
 
 def set_or_update_a_value(
-    data_model: pydantic.BaseModel,
+    dictionary: dict,
     key: str,
     value: str,
-    sub_model: Optional[pydantic.BaseModel | dict | list] = None,
-) -> pydantic.BaseModel:  # type: ignore
-    """Set or update a value in a data model for a specific key. For example, a key can
+    sub_dictionary: Optional[dict | list] = None,
+) -> dict:  # type: ignore
+    """Set or update a value in a dictionary for the given key. For example, a key can
     be `cv.sections.education.3.institution` and the value can be "Bogazici University".
 
     Args:
-        data_model (pydantic.BaseModel | dict | list): The data model to set or update
-            the value.
+        dictionary (dict): The dictionary to set or update the value.
         key (str): The key to set or update the value.
         value (Any): The value to set or update.
-        sub_model (pydantic.BaseModel | dict | list, optional): The sub model to set or
-            update the value. This is used for recursive calls. When the value is set
-            to a sub model, the original data model is validated. Defaults to None.
+        sub_dictionary (pydantic.BaseModel | dict | list, optional): The sub dictionary
+            to set or update the value. This is used for recursive calls. Defaults to
+            None.
     """
     # Recursively call this function until the last key is reached:
 
-    # Rename `sections` with `sections_input` since the key is `sections` is an alias:
-    key = key.replace("sections.", "sections_input.")
     keys = key.split(".")
 
-    if sub_model is not None:
-        model = sub_model
+    if sub_dictionary is not None:
+        updated_dict = sub_dictionary
     else:
-        model = data_model
+        updated_dict = dictionary
 
     if len(keys) == 1:
         # Set the value:
@@ -68,61 +63,47 @@ def set_or_update_a_value(
             # Allow users to assign lists:
             value = eval(value)
 
-        if isinstance(model, pydantic.BaseModel):
-            setattr(model, key, value)
-        elif isinstance(model, dict):
-            model[key] = value
-        elif isinstance(model, list):
-            model[int(key)] = value
-        else:
-            raise ValueError(
-                "The data model should be either a Pydantic data model, dictionary, or"
-                " list.",
-            )
+        if isinstance(updated_dict, list):
+            key = int(key)  # type: ignore
 
-        data_model = type(data_model).model_validate(
-            (data_model.model_dump(by_alias=True))
-        )
-        return data_model
+        updated_dict[key] = value  # type: ignore
+
     else:
         # get the first key and call the function with remaining keys:
         first_key = keys[0]
         key = ".".join(keys[1:])
-        if isinstance(model, pydantic.BaseModel):
-            sub_model = getattr(model, first_key)
-        elif isinstance(model, dict):
-            sub_model = model[first_key]
-        elif isinstance(model, list):
-            sub_model = model[int(first_key)]
-        else:
-            raise ValueError(
-                "The data model should be either a Pydantic data model, dictionary, or"
-                " list.",
-            )
 
-        set_or_update_a_value(data_model, key, value, sub_model)
+        if isinstance(updated_dict, list):
+            first_key = int(first_key)
+
+        if isinstance(first_key, int) or first_key in updated_dict:
+            # Key exists, get the sub dictionary:
+            sub_dictionary = updated_dict[first_key]  # type: ignore
+        else:
+            # Key does not exist, create a new sub dictionary:
+            sub_dictionary = dict()
+
+        updated_sub_dict = set_or_update_a_value(dictionary, key, value, sub_dictionary)
+        updated_dict[first_key] = updated_sub_dict  # type: ignore
+
+    return updated_dict  # type: ignore
 
 
 def set_or_update_values(
-    data_model: data.RenderCVDataModel,
+    dictionary: dict,
     key_and_values: dict[str, str],
-) -> data.RenderCVDataModel:
-    """Set or update values in `RenderCVDataModel` for specific keys. It uses the
+) -> dict:
+    """Set or update values in a dictionary for the given keys. It uses the
     `set_or_update_a_value` function to set or update the values.
 
     Args:
-        data_model (data.RenderCVDataModel): The data model to set or update the values.
+        dictionary (dict): The dictionary to set or update the values.
         key_and_values (dict[str, str]): The key and value pairs to set or update.
     """
     for key, value in key_and_values.items():
-        try:
-            data_model = set_or_update_a_value(data_model, key, value)  # type: ignore
-        except pydantic.ValidationError as e:
-            raise e
-        except (ValueError, KeyError, IndexError, AttributeError):
-            raise ValueError(f'The key "{key}" does not exist in the data model!')
+        dictionary = set_or_update_a_value(dictionary, key, value)  # type: ignore
 
-    return data_model
+    return dictionary
 
 
 def copy_files(paths: list[pathlib.Path] | pathlib.Path, new_path: pathlib.Path):
@@ -193,6 +174,7 @@ def get_error_message_and_location_and_value_from_a_custom_error(
 
     Args:
         error_string (str): The error message.
+
     Returns:
         tuple[Optional[str], Optional[str], Optional[str]]: The custom message,
             location, and the input value.
@@ -215,6 +197,7 @@ def copy_templates(
     Args:
         folder_name (str): The name of the folder to be copied.
         copy_to (pathlib.Path): The path to copy the folder to.
+
     Returns:
         Optional[pathlib.Path]: The path to the copied folder.
     """
@@ -246,6 +229,7 @@ def parse_render_command_override_arguments(
 
     Args:
         extra_arguments (typer.Context): The extra arguments context.
+
     Returns:
         dict["str", "str"]: The key and value pairs.
     """

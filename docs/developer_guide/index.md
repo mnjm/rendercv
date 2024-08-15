@@ -7,6 +7,10 @@ The source code is thoroughly documented and well-commented, making it an enjoya
 
 ## Getting Started
 
+There are two ways of developing RenderCV: locally or with GitHub Codespaces.
+
+### Develop Locally
+
 1. Ensure that you have Python version 3.10 or higher.
 2. Install [Hatch](https://hatch.pypa.io/latest/), as it is the project manager for RenderCV. The installation guide for Hatch can be found [here](https://hatch.pypa.io/latest/install/#installation).
 3. Clone the repository recursively (because TinyTeX is being used as a submodule) with the following command.
@@ -32,9 +36,17 @@ The source code is thoroughly documented and well-commented, making it an enjoya
 
 6. To use the virtual environments, either
 
-    - Activate one of the virtual environments with the following command.
+    - Activate one of the virtual environments with one of the following commands.
         ```bash
         hatch shell default
+        ```
+    
+        ```bash
+        hatch shell docs
+        ```
+    
+        ```bash
+        hatch shell test
         ```
     
     - Select one of the virtual environments in your Integrated Development Environment (IDE).
@@ -49,19 +61,29 @@ The source code is thoroughly documented and well-commented, making it an enjoya
 
             To be added.
 
+### Develop with GitHub Codespaces
+
+1.  [Fork](https://github.com/sinaatalay/rendercv/fork) the repository.
+2.  Navigate to the forked repository.
+3.  Click the <> **Code** button, then click the **Codespaces** tab, and then click **Create codespace on main**.
+
+Then, [Visual Studio Code for the Web](https://code.visualstudio.com/docs/editor/vscode-web) will be opened with a ready-to-use development environment.
+
+This is done with [Development containers](https://containers.dev/), and the environment is defined in the [`.devcontainer/devcontainer.json`](https://github.com/sinaatalay/rendercv/blob/main/.devcontainer/devcontainer.json) file. Dev containers can also be run locally using various [supporting tools and editors](https://containers.dev/supporting).
+
 ## Available Commands
 
 These commands are defined in the [`pyproject.toml`](https://github.com/sinaatalay/rendercv/blob/main/pyproject.toml) file.
 
-- Format the code with [Black](https://github.com/psf/black):
+- Format the code with [Black](https://github.com/psf/black)
     ```bash
     hatch run default:format
     ```
-- Lint the code with [Ruff](https://github.com/astral-sh/ruff):
+- Lint the code with [Ruff](https://github.com/astral-sh/ruff)
     ```bash
     hatch run default:lint
     ```
-- Sort the imports with [isort](https://github.com/timothycrosley/isort/):
+- Sort the imports with [isort](https://github.com/timothycrosley/isort/)
     ```bash
     hatch run default:sort-imports
     ```
@@ -69,35 +91,35 @@ These commands are defined in the [`pyproject.toml`](https://github.com/sinaatal
     ```bash
     hatch run default:check-types
     ```
-- Run the tests:
+- Run the tests
     ```bash
     hatch run test:run
     ```
-- Run the tests and generate a coverage report:
+- Run the tests and generate a coverage report
     ```bash
     hatch run test:run-and-report
     ```
-- Start the development server for the documentation:
+- Start the development server for the documentation
     ```bash
     hatch run docs:serve
     ```
-- Build the documentation:
+- Build the documentation
     ```bash
     hatch run docs:build
     ```
-- Update [schema.json](https://github.com/sinaatalay/rendercv/blob/main/schema.json):
+- Update [schema.json](https://github.com/sinaatalay/rendercv/blob/main/schema.json)
     ```bash
     hatch run docs:update-schema
     ```
-- Update [`examples`](https://github.com/sinaatalay/rendercv/tree/main/examples) folder:
+- Update [`examples`](https://github.com/sinaatalay/rendercv/tree/main/examples) folder
     ```bash
     hatch run docs:update-examples
     ```
-- Update figures of the entry types in the "[Structure of the YAML Input File](https://docs.rendercv.com/user_guide/structure_of_the_yaml_input_file/)":
+- Update figures of the entry types in the "[Structure of the YAML Input File](https://docs.rendercv.com/user_guide/structure_of_the_yaml_input_file/)"
     ```bash
     hatch run docs:update-entry-figures
     ```
 
 ## About [`pyproject.toml`](https://github.com/sinaatalay/rendercv/blob/main/pyproject.toml)
 
-[`pyproject.toml`](https://github.com/sinaatalay/rendercv/blob/main/pyproject.toml) contains all the metadata, dependencies, and tools required for the project. Please read through the file to understand the project's technical details.
+[`pyproject.toml`](https://github.com/sinaatalay/rendercv/blob/main/pyproject.toml) contains the metadata, dependencies, and tools required for the project. Please read through the file to understand the project's technical details.

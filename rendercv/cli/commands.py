@@ -176,21 +176,27 @@ def cli_command_render(
 
     with printer.LiveProgressReporter(number_of_steps) as progress:
         progress.start_a_step("Reading and validating the input file")
-        data_model = data.read_input_file(input_file_path)
+        data_as_a_dict = data.read_a_yaml_file(input_file_path)
 
-        # update the data model if there are extra arguments:
+        # update the data if there are extra override arguments:
         if extra_data_model_override_argumets:
             key_and_values = dict()
             key_and_values = utilities.parse_render_command_override_arguments(
                 extra_data_model_override_argumets
             )
-            data_model = utilities.set_or_update_values(data_model, key_and_values)
+            data_as_a_dict = utilities.set_or_update_values(
+                data_as_a_dict, key_and_values
+            )
+
+        data_model = data.validate_input_dictionary_and_return_the_data_model(
+            data_as_a_dict
+        )
 
         progress.finish_the_current_step()
 
         progress.start_a_step("Generating the LaTeX file")
         latex_file_path_in_output_folder = (
-            renderer.render_a_latex_file_and_copy_theme_files(
+            renderer.create_a_latex_file_and_copy_theme_files(
                 data_model, output_directory
             )
         )
@@ -217,7 +223,7 @@ def cli_command_render(
 
         if not dont_generate_markdown:
             progress.start_a_step("Generating the Markdown file")
-            markdown_file_path_in_output_folder = renderer.render_a_markdown_file(
+            markdown_file_path_in_output_folder = renderer.create_a_markdown_file(
                 data_model, output_directory
             )
             if paths["markdown"]:
@@ -390,8 +396,6 @@ def cli_command_no_args(
         Optional[bool], typer.Option("--version", "-v", help="Show the version.")
     ] = None,
 ):
-    """If the `--version` option is used, then show the version. Otherwise, show the
-    help message (see `no_args_is_help` argument of `typer.Typer` object)."""
     if version_requested:
         there_is_a_new_version = printer.warn_if_new_version_is_available()
         if not there_is_a_new_version:

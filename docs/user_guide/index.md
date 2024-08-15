@@ -25,21 +25,21 @@ This command will create the following files:
 
 -   A YAML input file called `Your_Name_CV.yaml`.
 
-    This file will contain all the content and design options of your CV.
+    This file contains the content and design options of your CV.
 
 -   A directory called `classic`.
 
-    This directory contains the $\LaTeX$ source code of RenderCV's default built-in theme, `classic`. You can update its contents to tweak the appearance of the output PDF file.
+    This directory contains the $\LaTeX$ templates of RenderCV's default built-in theme, `classic`. You can update its contents to tweak the appearance of the output PDF file.
 
 -   A directory called `markdown`.
 
-    This directory contains the Markdown source code of RenderCV's default Markdown template. You can update its contents to tweak the Markdown and HTML output of the CV.
+    This directory contains the templates of RenderCV's default Markdown template. You can update its contents to tweak the Markdown and HTML output of the CV.
 
 Please refer to the [here](cli.md#options-of-the-rendercv-new-command) for the complete list of CLI options available for the `new` command.
 
 ## Structure of the YAML input file
 
-The YAML input file contains all the content and design options of your CV. A detailed explanation of the structure of the YAML input file is provided [here](structure_of_the_yaml_input_file.md).
+The YAML input file contains the content and design options of your CV. A detailed explanation of the structure of the YAML input file is provided [here](structure_of_the_yaml_input_file.md).
 
 
 ## Rendering the CV with the `render` command
@@ -59,9 +59,22 @@ This command will generate a directory called `rendercv_output`, which contains 
 -   The CV in HTML format, `Your_Name_CV.html`.
 -   Some log and auxiliary files related to the $\LaTeX$ compilation process.
 
-If the theme and Markdown source files are found in the directory, they will override the default built-in theme and Markdown template. You don't need to provide all the source files; you can just provide the ones you want to override.
-
 Please refer to the [here](cli.md#options-of-the-rendercv-render-command) for the complete list of CLI options available for the `render` command.
+
+### Overriding built-in themes
+
+If the theme and Markdown templates are found in the directory, they will override the default built-in theme and Markdown templates. You don't need to provide all the files; you can just provide the ones you want to override.
+
+For example, `ExperienceEntry` of the `classic` theme can be modified as shown below.
+
+``` { .sh .no-copy }
+├── classic
+│   └── ExperienceEntry.j2.tex # (1)!
+└── Your_Full_Name_CV.yaml
+```
+
+1.  This file will override the built-in `ExperienceEntry.j2.tex` template of the `classic` theme.
+
 
 ## Creating custom themes with the `create-theme` command
 
@@ -91,14 +104,29 @@ This command will create a directory called `mycustomtheme`, which contains the 
 
 The files are copied from the `classic` theme. You can update the contents of these files to create your custom theme.
 
+To use your custom theme, update the `design.theme` field in the YAML input file as shown below.
+
+```yaml
+cv:
+  ...
+
+design:
+  theme: mycustomtheme
+```
+
+Then, run the `render` command to render your CV with `mycustomtheme`.
+
+!!! note
+    Since JSON Schema will not recognize the name of the custom theme, it may show a warning in your IDE. This warning can be ignored.
+
 Each of these `*.j2.tex` files is $\LaTeX$ code with some Python in it. These files allow RenderCV to create your CV out of the YAML input.
 
-The best way to understand how they work is to look at the source code of built-in themes:
+The best way to understand how they work is to look at the templates of the built-in themes:
 
-- [templates of the `classic` theme](../reference/themes/classic.md)
-- [templates of the `engineeringresumes` theme](../reference/themes/engineeringresumes.md)
-- [templates of the `sb2nov` theme](../reference/themes/sb2nov.md)
-- [templates of the `moderncv` theme](../reference/themes/moderncv.md)
+- [templates of the `classic` theme](../reference/themes/classic.md#jinja-templates)
+- [templates of the `engineeringresumes` theme](../reference/themes/engineeringresumes.md#jinja-templates)
+- [templates of the `sb2nov` theme](../reference/themes/sb2nov.md#jinja-templates)
+- [templates of the `moderncv` theme](../reference/themes/moderncv.md#jinja-templates)
 
 For example, the content of `ExperienceEntry.j2.tex` for the `moderncv` theme is shown below:
 
@@ -121,11 +149,11 @@ For example, the content of `ExperienceEntry.j2.tex` for the `moderncv` theme is
 ((* endfor *))
 ```
 
-The values between `<<` and `>>` are the names of Python variables, allowing you to write a $\\LaTeX$ CV without writing any content. They will be replaced with the values found in the YAML input. Also, the values between `((*` and `*))` are Python blocks, allowing you to use loops and conditional statements.
+The values between `<<` and `>>` are the names of Python variables, allowing you to write a $\\LaTeX$ CV without writing any content. They will be replaced with the values found in the YAML input. The values between `((*` and `*))` are Python blocks, allowing you to use loops and conditional statements.
 
-The process of generating $\\LaTeX$ files like this is called "templating," and it's achieved with a Python package called [Jinja](https://jinja.palletsprojects.com/en/3.1.x/).
+The process of generating $\\LaTeX$ files like this is called "templating," and it is achieved with a Python package called [Jinja](https://jinja.palletsprojects.com/en/3.1.x/).
 
-Also, the `__init__.py` file found in the theme directory is used to define the design options of the custom theme. You can define your custom design options in this file.
+The `__init__.py` file found in the theme directory defines the design options of the custom theme. You can define your custom design options in this file.
 
 For example, an `__init__.py` file is shown below:
 
@@ -142,7 +170,7 @@ class YourcustomthemeThemeOptions(pydantic.BaseModel):
     option4: bool
 ```
 
-Then, RenderCV will parse your custom design options from the YAML input, and you can use these variables inside your `*.j2.tex` files as shown below:
+RenderCV will then parse your custom design options from the YAML input. You can use these variables inside your `*.j2.tex` files as shown below:
 
 ```latex
 <<design.option1>>
@@ -152,4 +180,4 @@ Then, RenderCV will parse your custom design options from the YAML input, and yo
 ((* endif *))
 ```
 
-Please refer to the [here](cli.md#options-of-the-rendercv-create-theme-command) for the complete list of CLI options available for the `create-theme` command.
+Please refer [here](cli.md#options-of-the-rendercv-create-theme-command) for the complete list of CLI options available for the `create-theme` command.

@@ -11,14 +11,14 @@ import pydantic
 import pydantic_extra_types.phone_numbers as pydantic_phone_numbers
 
 from . import computers, entry_types
-from .base import RenderCVBaseModel
+from .base import RenderCVBaseModelWithExtraKeys, RenderCVBaseModelWithoutExtraKeys
 
 # ======================================================================================
 # Create validator functions: ==========================================================
 # ======================================================================================
 
 
-class SectionBase(RenderCVBaseModel):
+class SectionBase(RenderCVBaseModelWithoutExtraKeys):
     """This class is the parent class of all the section types. It is being used
     in RenderCV internally, and it is not meant to be used directly by the users.
     It is used by `rendercv.data_models.utilities.create_a_section_model` function to
@@ -39,6 +39,7 @@ def validate_url(url: str) -> str:
 
     Args:
         url (str): The URL to validate.
+
     Returns:
         str: The validated URL.
     """
@@ -57,10 +58,11 @@ def create_a_section_validator(entry_type: Type) -> Type[SectionBase]:
     Args:
         entry_type (Type): The entry type to create the section model. It's not an
             instance of the entry type, but the entry type itself.
+
     Returns:
         Type[SectionBase]: The section validator (a Pydantic model).
     """
-    if entry_type == str:
+    if entry_type is str:
         model_name = "SectionWithTextEntries"
         entry_type_name = "TextEntry"
     else:
@@ -86,6 +88,7 @@ def get_characteristic_entry_attributes(
         entry_types (list[Type]): The entry types to get their characteristic
             attributes. These are not instances of the entry types, but the entry
             types themselves. `str` type should not be included in this list.
+
     Returns:
         dict[Type, list[str]]: The characteristic attributes of the entry types.
     """
@@ -110,7 +113,7 @@ def get_characteristic_entry_attributes(
 
 
 def get_entry_type_name_and_section_validator(
-    entry: dict[str, Any] | str | Type, entry_types: list[Type]
+    entry: dict[str, str | list[str]] | str | Type, entry_types: list[Type]
 ) -> tuple[str, Type[SectionBase]]:
     """Get the entry type name and the section validator based on the entry.
 
@@ -119,10 +122,11 @@ def get_entry_type_name_and_section_validator(
     type.
 
     Args:
-        entry (dict[str, Any] | str): The entry to determine its type.
+        entry (dict[str, str | list[str]] | str): The entry to determine its type.
         entry_types (list[Type]): The entry types to determine the entry type. These
             are not instances of the entry types, but the entry types themselves. `str`
             type should not be included in this list.
+
     Returns:
         tuple[str, Type[SectionBase]]: The entry type name and the section validator.
     """
@@ -176,6 +180,7 @@ def validate_a_section(
         entry_types (list[Type]): The entry types to determine the entry type. These
             are not instances of the entry types, but the entry types themselves. `str`
             type should not be included in this list.
+
     Returns:
         list[Any]: The validated sections input.
     """
@@ -235,6 +240,7 @@ def validate_a_social_network_username(username: str, network: str) -> str:
 
     Args:
         username (str): The username to validate.
+
     Returns:
         str: The validated username.
     """
@@ -264,14 +270,11 @@ def validate_a_social_network_username(username: str, network: str) -> str:
 # Create custom types: =================================================================
 # ======================================================================================
 
-# Create a custom type named ListOfEntries:
-ListOfEntries = list[entry_types.Entry]
-
 # Create a custom type named SectionContents, which is a list of entries. The entries
 # can be any of the available entry types. The section is validated with the
 # `validate_a_section` function.
 SectionContents = Annotated[
-    pydantic.json_schema.SkipJsonSchema[Any] | ListOfEntries,
+    pydantic.json_schema.SkipJsonSchema[Any] | entry_types.ListOfEntries,
     pydantic.BeforeValidator(
         lambda entries: validate_a_section(
             entries, entry_types=entry_types.available_entry_models
@@ -305,7 +308,7 @@ available_social_networks = get_args(SocialNetworkName)
 # ======================================================================================
 
 
-class SocialNetwork(RenderCVBaseModel):
+class SocialNetwork(RenderCVBaseModelWithoutExtraKeys):
     """This class is the data model of a social network."""
 
     network: SocialNetworkName = pydantic.Field(
@@ -369,18 +372,13 @@ class SocialNetwork(RenderCVBaseModel):
         return url
 
 
-class CurriculumVitae(RenderCVBaseModel):
+class CurriculumVitae(RenderCVBaseModelWithExtraKeys):
     """This class is the data model of the `cv` field."""
 
     name: Optional[str] = pydantic.Field(
         default=None,
         title="Name",
         description="The name of the person.",
-    )
-    label: Optional[str] = pydantic.Field(
-        default=None,
-        title="Label",
-        description="The label of the person.",
     )
     location: Optional[str] = pydantic.Field(
         default=None,
@@ -395,7 +393,7 @@ class CurriculumVitae(RenderCVBaseModel):
     phone: Optional[pydantic_phone_numbers.PhoneNumber] = pydantic.Field(
         default=None,
         title="Phone",
-        description="The phone number of the person.",
+        description="The phone number of the person, including the country code.",
     )
     website: Optional[pydantic.HttpUrl] = pydantic.Field(
         default=None,
@@ -449,11 +447,11 @@ class CurriculumVitae(RenderCVBaseModel):
             )
 
         if self.phone is not None:
-            phone_placeholder = self.phone.replace("tel:", "").replace("-", " ")
+            phone_placeholder = computers.format_phone_number(self.phone)
             connections.append(
                 {
                     "latex_icon": "\\faPhone*",
-                    "url": f"{self.phone}",
+                    "url": self.phone,
                     "clean_url": phone_placeholder,
                     "placeholder": phone_placeholder,
                 }

@@ -5,20 +5,20 @@ Pydantic data model of RenderCV's data format.
 """
 
 import pathlib
-from typing import Any
 
 import ruamel.yaml
 
 from . import models
 
 
-def read_a_yaml_file(file_path_or_contents: pathlib.Path | str) -> dict[str, Any]:
+def read_a_yaml_file(file_path_or_contents: pathlib.Path | str) -> dict:
     """Read a YAML file and return its content as a dictionary. The YAML file can be
     given as a path to the file or as the contents of the file as a string.
 
     Args:
         file_path_or_contents (pathlib.Path | str): The path to the YAML file or the
             contents of the YAML file as a string.
+
     Returns:
         dict: The content of the YAML file as a dictionary.
     """
@@ -49,9 +49,28 @@ def read_a_yaml_file(file_path_or_contents: pathlib.Path | str) -> dict[str, Any
     else:
         file_content = file_path_or_contents
 
-    yaml_as_a_dictionary: dict[str, Any] = ruamel.yaml.YAML().load(file_content)
+    yaml_as_a_dictionary: dict = ruamel.yaml.YAML().load(file_content)
 
     return yaml_as_a_dictionary
+
+
+def validate_input_dictionary_and_return_the_data_model(
+    input_dictionary: dict,
+) -> models.RenderCVDataModel:
+    """Validate the input dictionary by creating an instance of `RenderCVDataModel`,
+    which is a Pydantic data model of RenderCV's data format.
+
+    Args:
+        input_dictionary (dict): The input dictionary.
+
+    Returns:
+        RenderCVDataModel: The data model.
+    """
+
+    # Validate the parsed dictionary by creating an instance of RenderCVDataModel:
+    rendercv_data_model = models.RenderCVDataModel(**input_dictionary)
+
+    return rendercv_data_model
 
 
 def read_input_file(
@@ -65,11 +84,12 @@ def read_input_file(
             input file as a string.
 
     Returns:
-        RenderCVDataModel: The data models with $\\LaTeX$ and Markdown strings.
+        RenderCVDataModel: The data model.
     """
     input_as_dictionary = read_a_yaml_file(file_path_or_contents)
 
-    # Validate the parsed dictionary by creating an instance of RenderCVDataModel:
-    rendercv_data_model = models.RenderCVDataModel(**input_as_dictionary)
+    rendercv_data_model = validate_input_dictionary_and_return_the_data_model(
+        input_as_dictionary
+    )
 
     return rendercv_data_model
